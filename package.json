@@ -12,6 +12,7 @@
 		"vite": "^4.3.2"
 	},
 	"dependencies": {
+		"@turf/turf": "^6.5.0",
 		"earcut": "^2.2.4",
 		"three": "^0.152.2"
 	}

@@ -6,7 +6,7 @@ const setup = () => {
 
 	const camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 2000 )
 	camera.up = new THREE.Vector3( 0, 0, 1 )
-	camera.position.set( 150, 150, 300 )
+	camera.position.set( 100, 100, 75 )
 
 	const renderer = new THREE.WebGLRenderer( {
 		alpha: true,
