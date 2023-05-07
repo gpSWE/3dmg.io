@@ -15,9 +15,31 @@ const main = () => {
 
 	//
 
-	const triangles = utils.triangulatePolygon( geojson.features[ 0 ] )
+	const polygon = geojson.features[ 0 ]
+	const coordinates = polygon.geometry.coordinates.flat()
+	const centerOfMas = polygon.properties.centerOfMass
+	const elevation = 0
 
-	console.log( triangles )
+	const vertices = []
+
+	for ( const position of coordinates ) {
+
+		vertices.push( ...utils.convertTo3DMercator( position, centerOfMas, elevation ) )
+	}
+
+	const triangles = utils.triangulatePolygon( polygon )
+
+	{
+		const geometry = new THREE.BufferGeometry()
+
+		geometry.setIndex( triangles )
+		geometry.setAttribute( "position", new THREE.Float32BufferAttribute( vertices, 3 ) )
+		geometry.computeVertexNormals()
+
+		const material = new THREE.MeshNormalMaterial()
+		const mesh = new THREE.Mesh( geometry, material )
+		scene.add( mesh )
+	}
 }
 
 main()
