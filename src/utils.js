@@ -2,6 +2,8 @@ import * as earcut from "earcut"
 import {
 	Vector3,
 	Box3,
+	BufferGeometry,
+	Float32BufferAttribute,
 } from "three"
 
 const triangulatePolygon = polygon => {
@@ -50,8 +52,43 @@ const generateUV = ( vertices, uComponent = 0, vComponent = 1 ) => {
 	return uv
 }
 
+const createPlaneGeometry = ( polygon, centerOfMass, elevation = 0, options = {
+	uv: true,
+	normal: true,
+} ) => {
+
+	const coordinates = polygon.geometry.coordinates.flat()
+
+	const vertices = []
+
+	for ( const position of coordinates ) {
+
+		vertices.push( ...convertTo3DMercator( position, centerOfMass, elevation ) )
+	}
+
+	const triangles = triangulatePolygon( polygon )
+
+	const geometry = new BufferGeometry()
+
+	geometry.setIndex( triangles )
+	geometry.setAttribute( "position", new Float32BufferAttribute( vertices, 3 ) )
+
+	if ( options.uv ) {
+
+		geometry.setAttribute( "uv", new Float32BufferAttribute( generateUV( vertices ), 2 ) )
+	}
+	
+	if ( options.normal ) {
+
+		geometry.computeVertexNormals()
+	}
+
+	return geometry
+}
+
 export {
 	triangulatePolygon,
 	convertTo3DMercator,
 	generateUV,
+	createPlaneGeometry,
 }
