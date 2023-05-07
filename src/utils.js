@@ -52,7 +52,7 @@ const generateUV = ( vertices, uComponent = 0, vComponent = 1 ) => {
 	return uv
 }
 
-const createPlaneGeometry = ( polygon, centerOfMass, elevation = 0, options = { uv: true, normal: true } ) => {
+const createPlaneGeometry = ( polygon, options = { centerOfMass: [], elevation: 0, uv: true, normal: true } ) => {
 
 	const coordinates = polygon.geometry.coordinates.flat()
 
@@ -60,7 +60,7 @@ const createPlaneGeometry = ( polygon, centerOfMass, elevation = 0, options = { 
 
 	for ( const position of coordinates ) {
 
-		vertices.push( ...convertTo3DMercator( position, centerOfMass, elevation ) )
+		vertices.push( ...convertTo3DMercator( position, options.centerOfMass, options.elevation ) )
 	}
 
 	const triangles = triangulatePolygon( polygon )
