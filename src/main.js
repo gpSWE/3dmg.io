@@ -21,7 +21,7 @@ const main = () => {
 	{
 		// PlaneGeometry
 
-		const geometry = utils.createPlaneGeometry( polygon, centerOfMass, 0 )
+		const geometry = utils.createPlaneGeometry( polygon, centerOfMass )
 		const material = new THREE.MeshBasicMaterial( { color: 0x4361ee } )
 		const mesh = new THREE.Mesh( geometry, material )
 		scene.add( mesh )
