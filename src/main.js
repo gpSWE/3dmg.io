@@ -17,19 +17,13 @@ const main = () => {
 
 	const polygon = geojson.features[ 0 ]
 	const centerOfMass = polygon.properties.centerOfMass
-	const elevation = 0
-
-	// BASE
 
 	{
-		const geometry = utils.createPlaneGeometry( polygon, centerOfMass, elevation )
+		// PlaneGeometry
 
-		const material = new THREE.MeshBasicMaterial( {
-			map: new THREE.TextureLoader().load( "/uvcheck.jpg" ),
-		} )
-
+		const geometry = utils.createPlaneGeometry( polygon, centerOfMass, 0 )
+		const material = new THREE.MeshBasicMaterial( { color: 0x4361ee } )
 		const mesh = new THREE.Mesh( geometry, material )
-
 		scene.add( mesh )
 	}
 }

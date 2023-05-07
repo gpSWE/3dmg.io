@@ -52,10 +52,7 @@ const generateUV = ( vertices, uComponent = 0, vComponent = 1 ) => {
 	return uv
 }
 
-const createPlaneGeometry = ( polygon, centerOfMass, elevation = 0, options = {
-	uv: true,
-	normal: true,
-} ) => {
+const createPlaneGeometry = ( polygon, centerOfMass, elevation = 0, options = { uv: true, normal: true } ) => {
 
 	const coordinates = polygon.geometry.coordinates.flat()
 
