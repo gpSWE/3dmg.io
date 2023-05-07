@@ -34,10 +34,16 @@ const main = () => {
 
 		geometry.setIndex( triangles )
 		geometry.setAttribute( "position", new THREE.Float32BufferAttribute( vertices, 3 ) )
+		geometry.setAttribute( "uv", new THREE.Float32BufferAttribute( utils.generateUV( vertices ), 2 ) )
+
 		geometry.computeVertexNormals()
 
-		const material = new THREE.MeshNormalMaterial()
+		const material = new THREE.MeshBasicMaterial( {
+			map: new THREE.TextureLoader().load( "/uvcheck.jpg" ),
+		} )
+
 		const mesh = new THREE.Mesh( geometry, material )
+
 		scene.add( mesh )
 	}
 }
