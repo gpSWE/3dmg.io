@@ -33,31 +33,26 @@ const main = () => {
 		const geometry = utils.createBoxGeometry( polygon, centerOfMass, {
 			elevation: 0,
 			height: 50,
-			face: 1,
+			face: 0,
+			faceWall: 0,
 			normal: true,
 			uv: true,
+			thickness: 5,
+			top: false,
 		} )
+
+		console.log( geometry.attributes.position.count )
 
 		const texture = new THREE.TextureLoader().load( "/uvcheck.jpg" )
 
 		const material = new THREE.MeshBasicMaterial( {
 			map: texture,
+			side: 2,
+			opacity: 1,
+			transparent: true,
 		} )
 		const mesh = new THREE.Mesh( geometry, material )
 		scene.add( mesh )
-	}
-
-	{
-		// FOR TEST
-
-		const texture = new THREE.TextureLoader().load( "/uvcheck.jpg" )
-
-		const geometry = new THREE.BoxGeometry( 100, 100, 100 )
-		const material = new THREE.MeshBasicMaterial( {
-			map: texture,
-		} )
-		const mesh = new THREE.Mesh( geometry, material )
-		// scene.add( mesh )
 	}
 }
 

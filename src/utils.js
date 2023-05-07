@@ -136,6 +136,36 @@ const createBoxGeometry = ( polygon, centerOfMass = [], options = { face: 0, ele
 		geometries.push( EXTERIOR )
 	}
 
+	// WALLS
+
+	if ( options.thickness > 0 ) {
+
+		for ( let i = 0; i < countOfContours - 1; i++ ) {
+
+			const a = new Vector3().fromBufferAttribute( BASE.attributes.position, i )
+			const b = new Vector3().fromBufferAttribute( BASE.attributes.position, i + 1 )
+
+			a.setLength( a.length() - options.thickness )
+			b.setLength( b.length() - options.thickness )
+
+			const c = b.clone().setComponent( 2, options.elevation + options.height )
+			const d = a.clone().setComponent( 2, options.elevation + options.height )
+
+			const WALL = new BufferGeometry().setIndex( options.faceWall === 0 ? [ 1, 0, 3, 3, 2, 1 ] : [ 2, 3, 0, 0, 1, 2 ] )
+
+			const vertices = [ ...a, ...b, ...c, ...d ]
+
+			if ( options.uv ) {
+
+				WALL.setAttribute( "uv", new Float32BufferAttribute( generateUV( vertices, 0, 2 ), 2 ) )
+			}
+
+			WALL.setAttribute( "position", new Float32BufferAttribute( vertices, 3 ) )
+
+			geometries.push( WALL )
+		}
+	}
+
 	// INTERIOR SIDES
 
 	if ( data.holes.length ) {
@@ -172,7 +202,53 @@ const createBoxGeometry = ( polygon, centerOfMass = [], options = { face: 0, ele
 
 	// TOP
 
-	{
+	if ( options.top === false && options.thickness > 0 ) {
+
+		const contours = []
+
+		for ( let i = 0; i < coordinates[ 0 ].length; i++ ) {
+
+			contours.push( [ vertices[ vertices, i * 3 ], vertices[ vertices, i * 3 + 1 ] ] )
+		}
+
+		const interior = []
+
+		for ( const position of contours ) {
+
+			const v3 = new Vector3( ...position, 0 )
+
+			v3.setLength( v3.length() - options.thickness )
+
+			interior.push( [ v3.x, v3.y ] )
+		}
+
+		const currentCoordinates = [ contours, interior ]
+
+		const data = earcut.flatten( currentCoordinates )
+		const triangles = earcut( data.vertices, data.holes, data.dimensions )
+
+		const flat = currentCoordinates.flat()
+
+		const currentVertices = []
+
+		for ( const position of flat ) {
+
+			currentVertices.push( ...position, options.height )
+		}
+
+		const TOP = new BufferGeometry().setIndex( triangles )
+		
+		TOP.setAttribute( "position", new Float32BufferAttribute( currentVertices, 3 ) )
+
+		if ( options.uv ) {
+
+			TOP.setAttribute( "uv", new Float32BufferAttribute( generateUV( currentVertices ), 2 ) )
+		}
+
+		geometries.push( TOP )
+	}
+	else if ( options.top ) {
+
 		const vertices = []
 
 		for ( let i = 0; i < BASE.attributes.position.count; i++ ) {
@@ -192,7 +268,7 @@ const createBoxGeometry = ( polygon, centerOfMass = [], options = { face: 0, ele
 		geometries.push( TOP )
 	}
 
-	const geometry = mergeGeometries( geometries )
+	const geometry = mergeGeometries( geometries, true )
 
 	if ( options.normal ) {
 
