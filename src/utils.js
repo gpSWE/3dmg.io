@@ -136,17 +136,17 @@ const createBoxGeometry = ( polygon, centerOfMass = [], options = { face: 0, ele
 		geometries.push( EXTERIOR )
 	}
 
-	// WALLS
+	// THICKNESS (EXTERIOR)
 
-	if ( options.thickness > 0 ) {
+	if ( options.exteriorThickness > 0 ) {
 
 		for ( let i = 0; i < countOfContours - 1; i++ ) {
 
 			const a = new Vector3().fromBufferAttribute( BASE.attributes.position, i )
 			const b = new Vector3().fromBufferAttribute( BASE.attributes.position, i + 1 )
 
-			a.setLength( a.length() - options.thickness )
-			b.setLength( b.length() - options.thickness )
+			a.setLength( a.length() - options.exteriorThickness )
+			b.setLength( b.length() - options.exteriorThickness )
 
 			const c = b.clone().setComponent( 2, options.elevation + options.height )
 			const d = a.clone().setComponent( 2, options.elevation + options.height )
@@ -200,54 +200,9 @@ const createBoxGeometry = ( polygon, centerOfMass = [], options = { face: 0, ele
 		}
 	}
 
-	// TOP
+	// EXTERIOR TOP
 
-	if ( options.top === false && options.thickness > 0 ) {
-
-		const contours = []
-
-		for ( let i = 0; i < coordinates[ 0 ].length; i++ ) {
-
-			contours.push( [ vertices[ vertices, i * 3 ], vertices[ vertices, i * 3 + 1 ] ] )
-		}
-
-		const interior = []
-
-		for ( const position of contours ) {
-
-			const v3 = new Vector3( ...position, 0 )
-
-			v3.setLength( v3.length() - options.thickness )
-
-			interior.push( [ v3.x, v3.y ] )
-		}
-
-		const currentCoordinates = [ contours, interior ]
-
-		const data = earcut.flatten( currentCoordinates )
-		const triangles = earcut( data.vertices, data.holes, data.dimensions )
-
-		const flat = currentCoordinates.flat()
-
-		const currentVertices = []
-
-		for ( const position of flat ) {
-
-			currentVertices.push( ...position, options.height )
-		}
-
-		const TOP = new BufferGeometry().setIndex( triangles )
-		
-		TOP.setAttribute( "position", new Float32BufferAttribute( currentVertices, 3 ) )
-
-		if ( options.uv ) {
-
-			TOP.setAttribute( "uv", new Float32BufferAttribute( generateUV( currentVertices ), 2 ) )
-		}
-
-		geometries.push( TOP )
-	}
-	else if ( options.top ) {
+	if ( options.exteriorTop ) {
 
 		const vertices = []
 
@@ -266,6 +221,123 @@ const createBoxGeometry = ( polygon, centerOfMass = [], options = { face: 0, ele
 		TOP.setAttribute( "position", new Float32BufferAttribute( vertices, 3 ) )
 
 		geometries.push( TOP )
+	}
+	else {
+
+		if ( options.exteriorThickness > 0 ) {
+
+			const contours = []
+
+			for ( let i = 0; i < coordinates[ 0 ].length; i++ ) {
+
+				contours.push( [ vertices[ vertices, i * 3 ], vertices[ vertices, i * 3 + 1 ] ] )
+			}
+
+			const interior = []
+
+			for ( const position of contours ) {
+
+				const v3 = new Vector3( ...position, 0 )
+
+				v3.setLength( v3.length() - options.exteriorThickness )
+
+				interior.push( [ v3.x, v3.y ] )
+			}
+
+			const currentCoordinates = [ contours, interior ]
+
+			const data = earcut.flatten( currentCoordinates )
+			const triangles = earcut( data.vertices, data.holes, data.dimensions )
+
+			const flat = currentCoordinates.flat()
+
+			const currentVertices = []
+
+			for ( const position of flat ) {
+
+				currentVertices.push( ...position, options.height )
+			}
+
+			const TOP = new BufferGeometry().setIndex( triangles )
+			
+			TOP.setAttribute( "position", new Float32BufferAttribute( currentVertices, 3 ) )
+
+			if ( options.uv ) {
+
+				TOP.setAttribute( "uv", new Float32BufferAttribute( generateUV( currentVertices ), 2 ) )
+			}
+
+			geometries.push( TOP )
+		}
+	}
+
+	if ( options.interiorTop && data.holes.length ) {
+
+		const holes = structuredClone( data.holes )
+
+		holes.push( countOfVertices )
+
+		for ( let h = 0; h < holes.length - 1; h++ ) {
+
+			const contours = []
+
+			for ( let i = holes[ h ]; i < holes[ h + 1 ] - 1; i++ ) {
+
+				const a = new Vector3().fromBufferAttribute( BASE.attributes.position, i )
+
+				contours.push( [ a.x, a.y ] )
+			}
+
+			const coordinates = [ contours ]
+
+			const data = earcut.flatten( coordinates )
+
+			const triangles = earcut( data.vertices, data.holes, data.dimensions )
+
+			const flat = coordinates.flat()
+			const vertices = []
+
+			for ( const position of flat ) {
+
+				position.push( options.height )
+
+				vertices.push( ...position )
+			}
+
+			const TOP = new BufferGeometry().setIndex( triangles )
+			
+			TOP.setAttribute( "position", new Float32BufferAttribute( vertices, 3 ) )
+
+			if ( options.uv ) {
+
+				TOP.setAttribute( "uv", new Float32BufferAttribute( generateUV( vertices ), 2 ) )
+			}
+
+			geometries.push( TOP )
+		}
+
+		/*
+			const coordinates = polygon.geometry.coordinates
+
+			const data = earcut.flatten( coordinates )
+			const triangles = earcut( data.vertices, data.holes, data.dimensions )
+
+			const flat = coordinates.flat()
+			const vertices = []
+
+			for ( const position of flat ) {
+
+				vertices.push( ...convertTo3DMercator( position, centerOfMass, options.elevation ) )
+			}
+
+			const BASE = new BufferGeometry().setIndex( triangles )
+			BASE.setAttribute( "position", new Float32BufferAttribute( vertices, 3 ) )
+
+			if ( options.uv ) {
+
+				BASE.setAttribute( "uv", new Float32BufferAttribute( generateUV( vertices ), 2 ) )
+			}
+		*/
 	}
 
 	const geometry = mergeGeometries( geometries, true )

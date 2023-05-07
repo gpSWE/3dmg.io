@@ -15,41 +15,34 @@ const main = () => {
 
 	//
 
-	const polygon = geojson.features[ 3 ]
+	const polygon = geojson.features[ 4 ]
 	const centerOfMass = polygon.properties.centerOfMass
-
-	{
-		// PlaneGeometry
-
-		// const geometry = utils.createPlaneGeometry( polygon, centerOfMass )
-		// const material = new THREE.MeshBasicMaterial( { color: 0x4361ee } )
-		// const mesh = new THREE.Mesh( geometry, material )
-		// scene.add( mesh )
-	}
 
 	{
 		// BoxGeometry
 
 		const geometry = utils.createBoxGeometry( polygon, centerOfMass, {
 			elevation: 0,
-			height: 50,
+			height: 100,
 			face: 0,
 			faceWall: 0,
 			normal: true,
 			uv: true,
-			thickness: 5,
-			top: false,
+			exteriorThickness: 10,
+			exteriorTop: true,
+			interiorTop: false,
 		} )
 
-		console.log( geometry.attributes.position.count )
+		console.log( "Count of vertices:", geometry.attributes.position.count )
 
 		const texture = new THREE.TextureLoader().load( "/uvcheck.jpg" )
 
 		const material = new THREE.MeshBasicMaterial( {
 			map: texture,
 			side: 2,
-			opacity: 1,
+			opacity: 0.5,
 			transparent: true,
+			wireframe: false,
 		} )
 		const mesh = new THREE.Mesh( geometry, material )
 		scene.add( mesh )
