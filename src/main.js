@@ -20,7 +20,7 @@ const main = () => {
 		const extuder = new Extruder( polygon )
 
 		{
-			const geometry = extuder.createInteriorPlane( {
+			const geometry = extuder.createExteriorPlane( {
 				elevation: 15,
 				length: 100,
 				// thickness: 6,

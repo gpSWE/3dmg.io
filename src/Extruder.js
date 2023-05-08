@@ -48,7 +48,7 @@ class Extruder {
 
 			const v3 = new Vector3( ...convertTo3DMercator( position, params.centerOfMass, params.elevation, params.scale ) )
 
-			v3.setLength( v3.length() + params.length )
+			v3.setLength( v3.length() + params.length ).setComponent( 2, params.elevation )
 
 			if ( params.side === 0 ) {
 
