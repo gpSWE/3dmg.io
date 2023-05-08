@@ -20,9 +20,6 @@ import { default as triangulate } from "earcut"
 
 class Extruder {
 
-	#baseVertices = null
-	#baseIndices = null
-
 	constructor( feature ) {
 
 		if ( feature.type ) {
@@ -48,27 +45,21 @@ class Extruder {
 
 		for ( const position of coordinates ) {
 
+			const v3 = new Vector3( ...convertTo3DMercator( position, params.centerOfMass, params.elevation, params.scale ) )
+
+			v3.setLength( v3.length() + params.length )
+
 			if ( params.side === 0 ) {
 
-				vertices.push( ...convertTo3DMercator( position, params.centerOfMass, params.elevation, params.scale ) )
+				vertices.push( ...v3 )
 			}
 			else if ( params.side === 1 ) {
 
-				vertices.unshift( ...convertTo3DMercator( position, params.centerOfMass, params.elevation, params.scale ) )
+				vertices.unshift( ...v3 )
 			}
 		}
 
-		if ( this.#baseVertices === null ) {
-
-			this.#baseVertices = vertices
-		}
-
 		const indices = triangulate( this.feature.earcut.vertices, this.feature.earcut.holes, this.feature.earcut.dimensions )
-
-		if ( this.#baseIndices === null ) {
-
-			this.#baseIndices = indices
-		}
 
 		const geometry = new BufferGeometry()
 
@@ -121,6 +112,7 @@ class Extruder {
 		params.elevation = params.elevation || 0
 		params.side = params.side || 0
 		params.color = params.color || new Color( 0xffffff )
+		params.length = params.length || 0
 
 		params.attributes = params.attributes || {}
 		params.attributes.uv = params.attributes.uv || false

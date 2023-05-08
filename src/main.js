@@ -19,43 +19,29 @@ const main = () => {
 
 		// BOTTOM
 
-		{
+		for ( let i = 0; i < 10; i++ ) {
+
 			const geometry = extuder.extrude( {
 				attributes: {
 					uv: true,
 					normal: true,
 				},
+				elevation: i * 20,
+				length: -i * 10
 			} )
 
 			const material = new THREE.MeshStandardMaterial( {
 				map: texture,
 				metalness: 0.5,
 				roughness: 0.75,
+				color: Math.random() * 0xffffff,
+				side: 2,
 			} )
 
 			scene.add( new THREE.Mesh( geometry, material ) )
 		}
 
 		// TOP
-
-		{
-			const geometry = extuder.extrude( {
-				attributes: {
-					uv: true,
-					normal: true,
-				},
-				elevation: 50,
-				side: 1,
-			} )
-
-			const material = new THREE.MeshStandardMaterial( {
-				map: texture,
-				metalness: 0.5,
-				roughness: 0.75,
-			} )
-
-			scene.add( new THREE.Mesh( geometry, material ) )
-		}
 	}
 	catch( e ) {
 
