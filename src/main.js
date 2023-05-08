@@ -22,15 +22,19 @@ const main = () => {
 		{
 			const geometry = extuder.extrude( {
 				attributes: {
-					uv: true,
+					// uv: true,
 					normal: true,
-				}
+					color: true,
+				},
+				color: new THREE.Color( 0xffff00 ),
 			} )
 
 			const material = new THREE.MeshStandardMaterial( {
-				map: texture,
+				// map: texture,
 				metalness: 0.5,
 				roughness: 0.75,
+				vertexColors: true,
+				// color: 0x000000,
 			} )
 
 			scene.add( new THREE.Mesh( geometry, material ) )

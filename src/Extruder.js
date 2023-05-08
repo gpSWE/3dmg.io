@@ -1,6 +1,7 @@
 import {
 	BufferGeometry,
 	Float32BufferAttribute,
+	Uint8BufferAttribute,
 	Vector3,
 	Box3,
 } from "three"
@@ -81,6 +82,20 @@ class Extruder {
 		if ( params.attributes.normal ) {
 
 			geometry.computeVertexNormals()
+		}
+
+		if ( params.attributes.color ) {
+
+			const count = geometry.attributes.position.count
+
+			const colors = []
+
+			for ( let i = 0; i < count; i++ ) {
+
+				colors.push( ...params.color )
+			}
+
+			geometry.setAttribute( "color", new Uint8BufferAttribute( new Uint8Array( colors ), 3 ) )
 		}
 
 		return geometry
