@@ -35,7 +35,7 @@ const generateUV = ( vertices, uComponent = 0, vComponent = 1 ) => {
 	return uv
 }
 
-const extude = ( coordinates, params ) => {
+const createBase = ( coordinates, params ) => {
 
 	// Projection
 
@@ -102,15 +102,12 @@ const main = () => {
 	const scale = 6_378_137
 
 	{
-		const geometry = extude( coordinates[ 0 ], {
+		const geometry = createBase( coordinates[ 0 ], {
 			centerOfMass: centerOfMass,
 			scale: scale,
 			side: 0,
 			elevation: -50,
-			height: 0,
 			length: 0,
-			thickness: 0,
-			fill: true,
 			attributes: {
 				uv: true,
 				normal: true,
@@ -123,15 +120,12 @@ const main = () => {
 	}
 
 	{
-		const geometry = extude( coordinates, {
+		const geometry = createBase( coordinates, {
 			centerOfMass: centerOfMass,
 			scale: scale,
 			side: 0,
 			elevation: 0,
-			height: 0,
 			length: 0,
-			thickness: 0,
-			fill: true,
 			attributes: {
 				uv: true,
 				normal: true,
@@ -144,15 +138,12 @@ const main = () => {
 	}
 
 	{
-		const geometry = extude( coordinates[ 1 ], {
+		const geometry = createBase( coordinates[ 1 ], {
 			centerOfMass: centerOfMass,
 			scale: scale,
 			side: 0,
 			elevation: 50,
-			height: 0,
 			length: 0,
-			thickness: 0,
-			fill: true,
 			attributes: {
 				uv: true,
 				normal: true,
@@ -165,15 +156,12 @@ const main = () => {
 	}
 
 	{
-		const geometry = extude( coordinates[ 2 ], {
+		const geometry = createBase( coordinates[ 2 ], {
 			centerOfMass: centerOfMass,
 			scale: scale,
 			side: 0,
 			elevation: 50,
-			height: 0,
 			length: 0,
-			thickness: 0,
-			fill: true,
 			attributes: {
 				uv: true,
 				normal: true,
@@ -186,15 +174,12 @@ const main = () => {
 	}
 
 	{
-		const geometry = extude( coordinates, {
+		const geometry = createBase( coordinates, {
 			centerOfMass: centerOfMass,
 			scale: scale,
 			side: 0,
 			elevation: 100,
-			height: 0,
 			length: -100,
-			thickness: 0,
-			fill: true,
 			attributes: {
 				uv: true,
 				normal: true,
