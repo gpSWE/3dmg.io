@@ -4,6 +4,7 @@ import {
 	Uint8BufferAttribute,
 	Vector3,
 	Box3,
+	Color,
 } from "three"
 
 import {
@@ -119,10 +120,12 @@ class Extruder {
 		params.scale = params.scale || 6_378_137 // Radius of the Earth
 		params.elevation = params.elevation || 0
 		params.side = params.side || 0
+		params.color = params.color || new Color( 0xffffff )
 
 		params.attributes = params.attributes || {}
 		params.attributes.uv = params.attributes.uv || false
 		params.attributes.normal = params.attributes.normal || false
+		params.attributes.color = params.attributes.color || false
 
 		return params
 	}
