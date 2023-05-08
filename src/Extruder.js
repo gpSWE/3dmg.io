@@ -12,6 +12,8 @@ import {
 	centerOfMass
 } from "@turf/turf"
 
+import { flatten } from "earcut"
+
 import {
 	convertTo3DMercator
 } from "./utils"
@@ -28,7 +30,62 @@ class Extruder {
 		}
 	}
 
+	createExteriorPlane( params ) {
+
+		// TODO
+
+		if ( !this.feature || this.feature.type !== "Polygon" ) {
+
+			return null
+		}
+
+		params = this.#createParams( params )
+
+		const vertices = []
+
+		for ( const position of this.feature.exterior ) {
+
+			const v3 = new Vector3( ...convertTo3DMercator( position, params.centerOfMass, params.elevation, params.scale ) )
+
+			v3.setLength( v3.length() + params.length )
+
+			if ( params.side === 0 ) {
+
+				vertices.push( ...v3 )
+			}
+			else if ( params.side === 1 ) {
+
+				vertices.unshift( ...v3 )
+			}
+		}
+
+		const data = flatten( [ this.feature.exterior ] )
+
+		const indices = triangulate( data.vertices, data.holes, data.dimensions )
+
+		const geometry = new BufferGeometry()
+
+		geometry.setIndex( indices )
+		geometry.setAttribute( "position", new Float32BufferAttribute( vertices, 3 ) )
+
+		if ( params.attributes.uv ) {
+
+			geometry.setAttribute( "uv", new Float32BufferAttribute( this.#generateUV( vertices ), 2 ) )
+		}
+
+		if ( params.attributes.normal ) {
+
+			geometry.computeVertexNormals()
+		}
+
+		return geometry
+	}
+
+	// TODO
+
 	extrude( params ) {
+
+		return
 
 		// TODO
 
@@ -45,9 +102,9 @@ class Extruder {
 
 		for ( const position of coordinates ) {
 
-			const v3 = new Vector3( ...convertTo3DMercator( position, params.centerOfMass, params.elevation, params.scale ) )
+			const v3 = new Vector3( ...convertTo3DMercator( position, params.centerOfMass, 0, params.scale ) )
 
-			v3.setLength( v3.length() + params.length )
+			v3.setLength( v3.length() + params.length ).setComponent( 2, params.elevation )
 
 			if ( params.side === 0 ) {
 
@@ -111,13 +168,11 @@ class Extruder {
 		params.scale = params.scale || 6_378_137 // Radius of the Earth
 		params.elevation = params.elevation || 0
 		params.side = params.side || 0
-		params.color = params.color || new Color( 0xffffff )
 		params.length = params.length || 0
 
 		params.attributes = params.attributes || {}
 		params.attributes.uv = params.attributes.uv || false
 		params.attributes.normal = params.attributes.normal || false
-		params.attributes.color = params.attributes.color || false
 
 		return params
 	}

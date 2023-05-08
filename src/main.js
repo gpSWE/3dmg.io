@@ -13,35 +13,49 @@ const main = () => {
 
 	try {
 
-		const polygon = new Polygon( geojson.features[ 0 ] )
+		const polygon = new Polygon( geojson.features[ 1 ] )
 
 		const extuder = new Extruder( polygon )
 
-		// BOTTOM
-
-		for ( let i = 0; i < 10; i++ ) {
-
-			const geometry = extuder.extrude( {
+		{
+			const geometry = extuder.createExteriorPlane( {
+				elevation: 0,
+				side: 0,
+				length: 0,
 				attributes: {
 					uv: true,
 					normal: true,
 				},
-				elevation: i * 20,
-				length: -i * 10
 			} )
 
 			const material = new THREE.MeshStandardMaterial( {
 				map: texture,
 				metalness: 0.5,
 				roughness: 0.75,
-				color: Math.random() * 0xffffff,
-				side: 2,
 			} )
 
 			scene.add( new THREE.Mesh( geometry, material ) )
 		}
 
-		// TOP
+		{
+			const geometry = extuder.createExteriorPlane( {
+				elevation: 10,
+				side: 0,
+				length: -10,
+				attributes: {
+					uv: true,
+					normal: true,
+				},
+			} )
+
+			const material = new THREE.MeshStandardMaterial( {
+				map: texture,
+				metalness: 0.5,
+				roughness: 0.75,
+			} )
+
+			scene.add( new THREE.Mesh( geometry, material ) )
+		}
 	}
 	catch( e ) {
 
