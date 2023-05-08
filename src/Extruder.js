@@ -82,6 +82,99 @@ class Extruder {
 		return geometry
 	}
 
+	createExteriorSides( params ) {
+
+		// TODO
+
+		if ( !this.feature || this.feature.type !== "Polygon" ) {
+
+			return null
+		}
+
+		params = this.#createParams( params )
+
+		const base = this.createExteriorPlane( {
+			...params,
+			attributes: {
+				uv: false,
+				normal: false,
+				elevation: 0,
+			}
+		} )
+
+		const geometries = []
+
+		for ( let i = 0; i < this.feature.exterior.length - 1; i++ ) {
+
+			const a = new Vector3().fromBufferAttribute( base.attributes.position, i )
+			const b = new Vector3().fromBufferAttribute( base.attributes.position, i + 1 )
+
+			const c = b.clone().setComponent( 2, params.elevation + params.height )
+			const d = a.clone().setComponent( 2, params.elevation + params.height )
+
+			const side = new BufferGeometry().setIndex( [ 1, 0, 3, 3, 2, 1 ] )
+
+			const vertices = [ ...d, ...c, ...b, ...a ]
+
+			if ( params.attributes.uv ) {
+
+				side.setAttribute( "uv", new Float32BufferAttribute( this.#generateUV( vertices, 0, 2 ), 2 ) )
+			}
+
+			side.setAttribute( "position", new Float32BufferAttribute( vertices, 3 ) )
+
+			geometries.push( side )
+		}
+
+		const geometry = mergeGeometries( geometries, true )
+
+		if ( params.attributes.normal ) {
+
+			geometry.computeVertexNormals()
+		}
+
+		return geometry
+
+		// const vertices = []
+
+		// for ( const position of this.feature.exterior ) {
+
+		// 	const v3 = new Vector3( ...convertTo3DMercator( position, params.centerOfMass, params.elevation, params.scale ) )
+
+		// 	v3.setLength( v3.length() + params.length )
+
+		// 	if ( params.side === 0 ) {
+
+		// 		vertices.push( ...v3 )
+		// 	}
+		// 	else if ( params.side === 1 ) {
+
+		// 		vertices.unshift( ...v3 )
+		// 	}
+		// }
+
+		// const data = flatten( [ this.feature.exterior ] )
+
+		// const indices = triangulate( data.vertices, data.holes, data.dimensions )
+
+		// const geometry = new BufferGeometry()
+
+		// geometry.setIndex( indices )
+		// geometry.setAttribute( "position", new Float32BufferAttribute( vertices, 3 ) )
+
+		// if ( params.attributes.uv ) {
+
+		// 	geometry.setAttribute( "uv", new Float32BufferAttribute( this.#generateUV( vertices ), 2 ) )
+		// }
+
+		// if ( params.attributes.normal ) {
+
+		// 	geometry.computeVertexNormals()
+		// }
+
+		// return geometry
+	}
+
 	createInteriorPlane( params ) {
 
 		// TODO
@@ -245,6 +338,7 @@ class Extruder {
 
 		params.scale = params.scale || 6_378_137 // Radius of the Earth
 		params.elevation = params.elevation || 0
+		params.height = params.height || 0
 		params.side = params.side || 0
 		params.length = params.length || 0
 
