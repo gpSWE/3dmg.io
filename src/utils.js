@@ -107,7 +107,12 @@ const createBoxGeometry = ( polygon, centerOfMass = [], options = { face: 0, ele
 		BASE.setAttribute( "uv", new Float32BufferAttribute( generateUV( vertices ), 2 ) )
 	}
 
-	const geometries = [ BASE ]
+	const geometries = []
+	
+	if ( options.base ) {
+
+		geometries.push( BASE )
+	}
 
 	const countOfVertices = data.vertices.length / 2
 	const countOfContours = data.holes[ 0 ] || countOfVertices

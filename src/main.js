@@ -34,8 +34,8 @@ const main = () => {
 
 	//
 
-	const polygon = geojson.features[ 3 ]
-	const smoothPolygon = turf.polygonSmooth( geojson.features[ 3 ], { interactions: 100 } )
+	const polygon = geojson.features[ 5 ]
+	const smoothPolygon = turf.polygonSmooth( geojson.features[ 5 ], { interactions: 100 } )
 	const centerOfMass = polygon.properties.centerOfMass
 
 	{
@@ -43,29 +43,30 @@ const main = () => {
 
 		const geometry = utils.createBoxGeometry( smoothPolygon.features[ 0 ], centerOfMass, {
 			elevation: 0,
-			height: 25,
+			height: 1000,
 			face: 0,
 			faceWall: 0,
 			normal: true,
 			uv: true,
-			exteriorThickness: 4,
+			base: false,
+			exteriorThickness: 0,
 			exteriorTop: false,
 			interiorTop: true,
 		} )
 
 		console.log( "Count of vertices:", geometry.attributes.position.count )
 
-		const texture = new THREE.TextureLoader().load( "/156-comp-1024x1024.jpg" )
+		const texture = new THREE.TextureLoader().load( "/212-comp-1024x997.png" )
 
 		texture.wrapT = texture.wrapS = THREE.RepeatWrapping
 		texture.repeat.set( 2, 2 )
 		texture.anisotropy = renderer.capabilities.getMaxAnisotropy()
 
 		const material = new THREE.MeshStandardMaterial( {
-			map: texture,
-			metalness: 0.25,
-			roughness: 0.75,
-			color: 0xffffff,
+			alphaMap: texture,
+			metalness: 1,
+			roughness: 0,
+			color: 0x000000,
 			side: 2,
 			transparent: true,
 			wireframe: false,
