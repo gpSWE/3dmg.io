@@ -99,6 +99,7 @@ class Extruder {
 				uv: false,
 				normal: false,
 				elevation: 0,
+				length: 0,
 			}
 		} )
 
@@ -108,6 +109,12 @@ class Extruder {
 
 			const a = new Vector3().fromBufferAttribute( base.attributes.position, i )
 			const b = new Vector3().fromBufferAttribute( base.attributes.position, i + 1 )
+
+			a.setLength( a.length() + params.length )
+			b.setLength( b.length() + params.length )
+
+			a.setComponent( 2, params.elevation )
+			b.setComponent( 2, params.elevation )
 
 			const c = b.clone().setComponent( 2, params.elevation + params.height )
 			const d = a.clone().setComponent( 2, params.elevation + params.height )
@@ -126,8 +133,141 @@ class Extruder {
 			geometries.push( side )
 		}
 
-		const geometry = mergeGeometries( geometries, true )
+		if ( params.thickness > 0 ) {
 
+			for ( let i = 0; i < this.feature.exterior.length - 1; i++ ) {
+
+				const a = new Vector3().fromBufferAttribute( base.attributes.position, i )
+				const b = new Vector3().fromBufferAttribute( base.attributes.position, i + 1 )
+
+				a.setLength( a.length() + params.length )
+				b.setLength( b.length() + params.length )
+
+				a.setLength( a.length() - params.thickness )
+				b.setLength( b.length() - params.thickness )
+
+				a.setComponent( 2, params.elevation )
+				b.setComponent( 2, params.elevation )
+
+				const c = b.clone().setComponent( 2, params.elevation + params.height )
+				const d = a.clone().setComponent( 2, params.elevation + params.height )
+
+				const side = new BufferGeometry().setIndex( [ 1, 0, 3, 3, 2, 1 ] )
+
+				const vertices = [ ...d, ...c, ...b, ...a ]
+
+				if ( params.attributes.uv ) {
+
+					side.setAttribute( "uv", new Float32BufferAttribute( this.#generateUV( vertices, 0, 2 ), 2 ) )
+				}
+
+				side.setAttribute( "position", new Float32BufferAttribute( vertices, 3 ) )
+
+				geometries.push( side )
+			}
+		}
+		else {
+
+			const geometry = mergeGeometries( geometries, true )
+			
+			if ( params.attributes.normal ) {
+
+				geometry.computeVertexNormals()
+			}
+
+			return geometry
+		}
+
+		if ( params.thickness > 0 && params.top ) {
+
+			const contours = []
+			const holes = []
+
+			const contourVertices = []
+			const holeVertices = []
+
+			for ( let i = 0; i < this.feature.exterior.length - 1; i++ ) {
+
+				const c = new Vector3().fromBufferAttribute( base.attributes.position, i )
+				const h = c.clone()
+
+				c.setLength( c.length() + params.length )
+				h.setLength( ( h.length() + params.length ) - params.thickness )
+
+				c.setComponent( 2, params.elevation + params.height )
+				h.setComponent( 2, params.elevation + params.height )
+
+				contours.push( [ c.x, c.y ] )
+				holes.unshift( [ h.x, h.y ] )
+
+				contourVertices.push( ...c )
+				holeVertices.unshift( ...h )
+			}
+
+			const data = flatten( [ contours, holes ] )
+
+			const indices = triangulate( data.vertices, data.holes, data.dimensions )
+
+			const vertices = [ ...contourVertices, ...holeVertices ]
+
+			const top = new BufferGeometry().setIndex( indices )
+
+			if ( params.attributes.uv ) {
+
+				top.setAttribute( "uv", new Float32BufferAttribute( this.#generateUV( vertices, 0, 1 ), 2 ) )
+			}
+
+			top.setAttribute( "position", new Float32BufferAttribute( vertices, 3 ) )
+
+			geometries.push( top )
+		}
+
+		if ( params.thickness > 0 && params.bottom ) {
+
+			const contours = []
+			const holes = []
+
+			const contourVertices = []
+			const holeVertices = []
+
+			for ( let i = 0; i < this.feature.exterior.length - 1; i++ ) {
+
+				const c = new Vector3().fromBufferAttribute( base.attributes.position, i )
+				const h = c.clone()
+
+				c.setLength( c.length() + params.length )
+				h.setLength( ( h.length() + params.length ) - params.thickness )
+
+				c.setComponent( 2, params.elevation )
+				h.setComponent( 2, params.elevation )
+
+				contours.push( [ c.x, c.y ] )
+				holes.push( [ h.x, h.y ] )
+
+				contourVertices.push( ...c )
+				holeVertices.push( ...h )
+			}
+
+			const data = flatten( [ contours, holes ] )
+
+			const indices = triangulate( data.vertices, data.holes, data.dimensions )
+
+			const vertices = [ ...contourVertices, ...holeVertices ]
+
+			const bottom = new BufferGeometry().setIndex( indices )
+
+			if ( params.attributes.uv ) {
+
+				bottom.setAttribute( "uv", new Float32BufferAttribute( this.#generateUV( vertices, 0, 1 ), 2 ) )
+			}
+
+			bottom.setAttribute( "position", new Float32BufferAttribute( vertices, 3 ) )
+
+			geometries.push( bottom )
+		}
+
+		const geometry = mergeGeometries( geometries, true )
+			
 		if ( params.attributes.normal ) {
 
 			geometry.computeVertexNormals()
@@ -302,6 +442,17 @@ class Extruder {
 		params.height = params.height || 0
 		params.side = params.side || 0
 		params.length = params.length || 0
+		params.thickness = params.thickness || 0
+
+		if ( !( "top" in params ) ) {
+
+			params.top = true
+		}
+
+		if ( !( "bottom" in params ) ) {
+
+			params.bottom = false
+		}
 
 		params.attributes = params.attributes || {}
 		params.attributes.uv = params.attributes.uv || false

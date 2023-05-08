@@ -15,57 +15,17 @@ const main = () => {
 
 	try {
 
-		const polygon = new Polygon( geojson.features[ 4 ] )
+		const polygon = new Polygon( geojson.features[ 1 ] )
 
 		const extuder = new Extruder( polygon )
 
 		{
-			const geometry = extuder.createExteriorPlane( {
-				elevation: 0,
-				side: 0,
-				length: 0,
-				attributes: {
-					uv: true,
-					normal: true,
-				},
-			} )
-
-			const material = new THREE.MeshStandardMaterial( {
-				metalness: 0.5,
-				roughness: 0.75,
-				map: texture2,
-			} )
-
-			scene.add( new THREE.Mesh( geometry, material ) )
-		}
-
-		{
-			const geometry = extuder.createExteriorSides( {
-				elevation: -80,
-				height: 80,
-				side: 0,
-				length: 0,
-				attributes: {
-					uv: true,
-					normal: true,
-				},
-			} )
-
-			const material = new THREE.MeshStandardMaterial( {
-				metalness: 0,
-				roughness: 1,
-				map: texture3,
-			} )
-
-			scene.add( new THREE.Mesh( geometry, material ) )
-		}
-
-		{
-			const geometry = extuder.createExteriorSides( {
-				elevation: 0,
-				height: 100,
-				side: 0,
-				length: -10,
+			const geometry = extuder.createInteriorPlane( {
+				elevation: 15,
+				length: 100,
+				// thickness: 6,
+				// // top: false,
+				// bottom: true,
 				attributes: {
 					uv: true,
 					normal: true,
@@ -76,6 +36,32 @@ const main = () => {
 				metalness: 0,
 				roughness: 1,
 				map: texture1,
+				side: 2,
+			} )
+
+			scene.add( new THREE.Mesh( geometry, material ) )
+		}
+
+		{
+			const geometry = extuder.createExteriorSides( {
+				elevation: 0,
+				height: 15,
+				side: 0,
+				length: -2,
+				thickness: 6,
+				// top: false,
+				bottom: true,
+				attributes: {
+					uv: true,
+					normal: true,
+				},
+			} )
+
+			const material = new THREE.MeshStandardMaterial( {
+				metalness: 0,
+				roughness: 1,
+				map: texture1,
+				side: 2,
 			} )
 
 			scene.add( new THREE.Mesh( geometry, material ) )
