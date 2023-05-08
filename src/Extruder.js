@@ -31,55 +31,59 @@ class Extruder {
 
 	extrude( params ) {
 
-		if ( !this.feature ) {
+		// TODO
+
+		if ( !this.feature || this.feature.type !== "Polygon" ) {
 
 			return null
 		}
 
-		if ( this.feature.type === "Polygon" ) {
+		params = this.#createParams( params )
 
-			params = this.#createParams( params )
+		const coordinates = this.feature.coordinates.flat()
 
-			const coordinates = this.feature.coordinates.flat()
+		const vertices = []
 
-			const vertices = []
+		for ( const position of coordinates ) {
 
-			for ( const position of coordinates ) {
+			if ( params.side === 0 ) {
 
 				vertices.push( ...convertTo3DMercator( position, params.centerOfMass, params.elevation, params.scale ) )
 			}
+			else if ( params.side === 1 ) {
 
-			if ( this.#baseVertices === null ) {
-
-				this.#baseVertices = vertices
+				vertices.unshift( ...convertTo3DMercator( position, params.centerOfMass, params.elevation, params.scale ) )
 			}
-
-			const indices = triangulate( this.feature.earcut.vertices, this.feature.earcut.holes, this.feature.earcut.dimensions )
-
-			if ( this.#baseIndices === null ) {
-
-				this.#baseIndices = indices
-			}
-
-			const geometry = new BufferGeometry()
-
-			geometry.setIndex( indices )
-			geometry.setAttribute( "position", new Float32BufferAttribute( vertices, 3 ) )
-
-			if ( params.attributes.uv ) {
-
-				geometry.setAttribute( "uv", new Float32BufferAttribute( this.#generateUV( vertices ), 2 ) )
-			}
-
-			if ( params.attributes.normal ) {
-
-				geometry.computeVertexNormals()
-			}
-
-			return geometry
 		}
 
-		return null
+		if ( this.#baseVertices === null ) {
+
+			this.#baseVertices = vertices
+		}
+
+		const indices = triangulate( this.feature.earcut.vertices, this.feature.earcut.holes, this.feature.earcut.dimensions )
+
+		if ( this.#baseIndices === null ) {
+
+			this.#baseIndices = indices
+		}
+
+		const geometry = new BufferGeometry()
+
+		geometry.setIndex( indices )
+		geometry.setAttribute( "position", new Float32BufferAttribute( vertices, 3 ) )
+
+		if ( params.attributes.uv ) {
+
+			geometry.setAttribute( "uv", new Float32BufferAttribute( this.#generateUV( vertices ), 2 ) )
+		}
+
+		if ( params.attributes.normal ) {
+
+			geometry.computeVertexNormals()
+		}
+
+		return geometry
 	}
 
 	#createParams( params ) {
@@ -99,8 +103,9 @@ class Extruder {
 
 		params.scale = params.scale || 6_378_137 // Radius of the Earth
 		params.elevation = params.elevation || 0
-		params.attributes = params.attributes || {}
+		params.side = params.side || 0
 
+		params.attributes = params.attributes || {}
 		params.attributes.uv = params.attributes.uv || false
 		params.attributes.normal = params.attributes.normal || false
 

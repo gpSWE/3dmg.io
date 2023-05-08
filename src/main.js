@@ -13,9 +13,11 @@ const main = () => {
 
 	try {
 
-		const polygon = new Polygon( geojson.features[ 5 ] )
+		const polygon = new Polygon( geojson.features[ 0 ] )
 
 		const extuder = new Extruder( polygon )
+
+		// BOTTOM
 
 		{
 			const geometry = extuder.extrude( {
@@ -23,6 +25,27 @@ const main = () => {
 					uv: true,
 					normal: true,
 				}
+			} )
+
+			const material = new THREE.MeshStandardMaterial( {
+				map: texture,
+				metalness: 0.5,
+				roughness: 0.75,
+			} )
+
+			scene.add( new THREE.Mesh( geometry, material ) )
+		}
+
+		// TOP
+
+		{
+			const geometry = extuder.extrude( {
+				attributes: {
+					uv: true,
+					normal: true,
+				},
+				elevation: 50,
+				side: 1,
 			} )
 
 			const material = new THREE.MeshStandardMaterial( {
