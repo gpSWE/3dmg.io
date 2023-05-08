@@ -6,7 +6,7 @@ const setup = () => {
 
 	const camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 60_000 )
 	camera.up = new THREE.Vector3( 0, 0, 1 )
-	camera.position.set( 0, 0, 30_000 )
+	camera.position.set( 0, 0, 200 )
 
 	const renderer = new THREE.WebGLRenderer( {
 		alpha: true,
@@ -28,6 +28,28 @@ const setup = () => {
 	onResize()
 
 	window.addEventListener( "resize", onResize, false )
+
+	//
+
+	scene.add( new THREE.AxesHelper( 1000 ) )
+
+	{
+		const light = new THREE.DirectionalLight( 0xffffff, 0.5 )
+		light.position.set( 50, 50, 50 )
+		scene.add( light )
+	}
+
+	{
+		const light = new THREE.HemisphereLight( 0xffffff, 0x000000, 1 )
+		light.position.set( 50, 50, 100 )
+		scene.add( light )
+	}
+
+	{
+		const light = new THREE.AmbientLight( 0xffffff, 0.25 )
+		light.position.set( 50, 50, 100 )
+		scene.add( light )
+	}
 
 	// default
 
