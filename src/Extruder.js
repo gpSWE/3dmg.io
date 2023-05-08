@@ -15,7 +15,8 @@ import {
 import { flatten } from "earcut"
 
 import {
-	convertTo3DMercator
+	convertTo3DMercator,
+	mergeGeometries,
 } from "./utils"
 
 import { default as triangulate } from "earcut"
@@ -72,6 +73,83 @@ class Extruder {
 
 			geometry.setAttribute( "uv", new Float32BufferAttribute( this.#generateUV( vertices ), 2 ) )
 		}
+
+		if ( params.attributes.normal ) {
+
+			geometry.computeVertexNormals()
+		}
+
+		return geometry
+	}
+
+	createInteriorPlane( params ) {
+
+		// TODO
+
+		if ( !this.feature || this.feature.type !== "Polygon" ) {
+
+			return null
+		}
+
+		if ( !this.feature.interior.length ) {
+
+			console.warn( "No interior shapes" )
+
+			return new BufferGeometry()
+		}
+
+		params = this.#createParams( params )
+
+		const geometries = []
+
+		for ( const coordinates of this.feature.interior ) {
+			
+			const vertices = []
+
+			for ( const position of coordinates ) {
+
+				const v3 = new Vector3( ...convertTo3DMercator( position, params.centerOfMass, params.elevation, params.scale ) )
+
+				v3.setLength( v3.length() + params.length )
+
+				if ( params.side === 0 ) {
+
+					vertices.push( ...v3 )
+				}
+				else if ( params.side === 1 ) {
+
+					vertices.unshift( ...v3 )
+				}
+			}
+
+			const data = flatten( [ coordinates ] )
+
+			const indices = triangulate( data.vertices, data.holes, data.dimensions )
+
+			const geometry = new BufferGeometry()
+			
+			geometry.setIndex( indices )
+			geometry.setAttribute( "position", new Float32BufferAttribute( vertices, 3 ) )
+
+			if ( params.attributes.uv ) {
+
+				geometry.setAttribute( "uv", new Float32BufferAttribute( this.#generateUV( vertices ), 2 ) )
+			}
+
+			geometries.push( geometry )
+		}
+
+		if ( geometries.length === 1 ) {
+
+			if ( params.attributes.normal ) {
+
+				geometries[ 0 ].computeVertexNormals()
+			}
+
+			return geometries[ 0 ]
+		}
+
+		const geometry = mergeGeometries( geometries, true )
 
 		if ( params.attributes.normal ) {
 

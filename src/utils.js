@@ -452,4 +452,5 @@ export {
 	generateUV,
 	createPlaneGeometry,
 	createBoxGeometry,
+	mergeGeometries,
 }
