@@ -6,16 +6,17 @@ const defaultParameters = {
 
 class Polygon {
 
-	constructor( feature, centerOfMass ) {
+	constructor( feature ) {
 
-		this.#initFeature( feature, centerOfMass )
-	}
-
-	#initFeature( feature, centerOfMass ) {
+		feature = feature || {
+			geometry: {
+				type: null,
+			}
+		}
 
 		if ( feature.geometry.type !== "Polygon" ) {
 
-			throw new Error( "The geometry of the feature must be of Polygon type." )
+			throw "The geometry of the feature must be of Polygon type."
 		}
 
 		this.type = "Polygon"
@@ -35,6 +36,8 @@ class Polygon {
 		this.params = params
 
 		this.earcut = flatten( [ this.exterior, ...this.interior ] )
+
+		return this
 	}
 }
 

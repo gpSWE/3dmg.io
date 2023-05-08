@@ -23,10 +23,18 @@ class Extruder {
 
 	constructor( feature ) {
 
-		this.feature = feature
+		if ( feature.type ) {
+
+			this.feature = feature
+		}
 	}
 
 	extrude( params ) {
+
+		if ( !this.feature ) {
+
+			return null
+		}
 
 		if ( this.feature.type === "Polygon" ) {
 

@@ -1,4 +1,5 @@
 import * as THREE from "three"
+import { OrbitControls } from "three/addons/controls/OrbitControls"
 
 const setup = () => {
 
@@ -30,6 +31,8 @@ const setup = () => {
 	window.addEventListener( "resize", onResize, false )
 
 	//
+
+	new OrbitControls( camera, renderer.domElement )
 
 	scene.add( new THREE.AxesHelper( 1000 ) )
 
