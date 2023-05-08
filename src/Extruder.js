@@ -134,45 +134,6 @@ class Extruder {
 		}
 
 		return geometry
-
-		// const vertices = []
-
-		// for ( const position of this.feature.exterior ) {
-
-		// 	const v3 = new Vector3( ...convertTo3DMercator( position, params.centerOfMass, params.elevation, params.scale ) )
-
-		// 	v3.setLength( v3.length() + params.length )
-
-		// 	if ( params.side === 0 ) {
-
-		// 		vertices.push( ...v3 )
-		// 	}
-		// 	else if ( params.side === 1 ) {
-
-		// 		vertices.unshift( ...v3 )
-		// 	}
-		// }
-
-		// const data = flatten( [ this.feature.exterior ] )
-
-		// const indices = triangulate( data.vertices, data.holes, data.dimensions )
-
-		// const geometry = new BufferGeometry()
-
-		// geometry.setIndex( indices )
-		// geometry.setAttribute( "position", new Float32BufferAttribute( vertices, 3 ) )
-
-		// if ( params.attributes.uv ) {
-
-		// 	geometry.setAttribute( "uv", new Float32BufferAttribute( this.#generateUV( vertices ), 2 ) )
-		// }
-
-		// if ( params.attributes.normal ) {
-
-		// 	geometry.computeVertexNormals()
-		// }
-
-		// return geometry
 	}
 
 	createInteriorPlane( params ) {
