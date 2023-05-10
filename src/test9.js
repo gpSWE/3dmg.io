@@ -5,12 +5,12 @@ import { setup } from "./setup"
 class PlaneGeometry extends THREE.BufferGeometry {
 
 	constructor(
-		elevation,
+		elevation = 0,
 		height = 1,
 		gridX = 1,
 		gridY = 1,
-		A,
-		B,
+		start = new THREE.Vector3( 0, 0, 0 ),
+		end = new THREE.Vector3( 1, 0, 0 ),
 	) {
 
 		super()
@@ -20,8 +20,9 @@ class PlaneGeometry extends THREE.BufferGeometry {
 		const normals = []
 		const uvs = []
 
-		const line = new THREE.Line3( A, B )
 		const v3 = new THREE.Vector3()
+
+		const at = t => v3.subVectors( end, start ).multiplyScalar( t ).add( start )
 
 		for ( let iy = 0; iy <= gridY; iy ++ ) {
 
@@ -29,7 +30,7 @@ class PlaneGeometry extends THREE.BufferGeometry {
 
 			for ( let ix = 0; ix <= gridX; ix ++ ) {
 
-				line.at( ix * 1 / gridX, v3 )
+				at( ix * 1 / gridX )
 
 				vertices.push( v3.x, - y, - v3.y )
 
@@ -64,7 +65,8 @@ const { scene, renderer } = setup()
 
 scene.add( new THREE.GridHelper( 20, 20, 0x606060, 0x303030 ) )
 
-const map = new THREE.TextureLoader().load( "0518-3-1024x1024.jpg" )
+// const map = new THREE.TextureLoader().load( "0518-3-1024x1024.jpg" )
+const map = new THREE.TextureLoader().load( "uvcheck.jpg" )
 map.colorSpace = THREE.SRGBColorSpace
 map.anisotropy = renderer.capabilities.getMaxAnisotropy()
 map.wrapS = map.wrapT = THREE.RepeatWrapping
@@ -93,39 +95,27 @@ const heightSegments = 4
 
 for ( let i = 0; i < coordinates.length - 1; i++ ) {
 
-	const A = new THREE.Vector3( ...coordinates[ i ] )
-	const B = new THREE.Vector3( ...coordinates[ i + 1 ] )
+	const start = new THREE.Vector3( ...coordinates[ i ] )
+	const end = new THREE.Vector3( ...coordinates[ i + 1 ] )
 
 	const geometry = new PlaneGeometry(
 		elevation,
 		height,
 		widthSegments,
 		heightSegments,
-		A,
-		B
+		start,
+		end,
+		1,
 	)
+
+	geometry.toNonIndexed()
 
 	const material = new THREE.MeshBasicMaterial( {
 		map,
-		// wireframe: true,
+		wireframe: true,
 		side: 2,
 	} )
 
 	const mesh = new THREE.Mesh( geometry, material )
 	scene.add( mesh )
 }
-
-const geometry = new PlaneGeometry(
-	1,
-	1,
-	4,
-	4,
-	new THREE.Vector3( 0, 0, 0 ),
-	new THREE.Vector3( 1, 0, 0 )
-)
-const material = new THREE.MeshBasicMaterial( {
-	// map,
-	wireframe: true,
-} )
-const mesh = new THREE.Mesh( geometry, material )
-// scene.add( mesh )
