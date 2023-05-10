@@ -1,6 +1,8 @@
 import "./main.css"
 import * as THREE from "three"
+import * as utils from "./utils"
 import { setup } from "./setup"
+import geojson from "./geojson"
 
 class PlaneGeometry extends THREE.BufferGeometry {
 
@@ -65,33 +67,36 @@ const { scene, renderer } = setup()
 
 scene.add( new THREE.GridHelper( 20, 20, 0x606060, 0x303030 ) )
 
-// const map = new THREE.TextureLoader().load( "0518-3-1024x1024.jpg" )
-const map = new THREE.TextureLoader().load( "uvcheck.jpg" )
+const map = new THREE.TextureLoader().load( "0518-3-1024x1024.jpg" )
+// const map = new THREE.TextureLoader().load( "uvcheck.jpg" )
 map.colorSpace = THREE.SRGBColorSpace
 map.anisotropy = renderer.capabilities.getMaxAnisotropy()
 map.wrapS = map.wrapT = THREE.RepeatWrapping
 
-const coordinates = [
-	[ 0, 0, 0 ],
-	[ 2, 0, 0 ],
-	[ 3, 2, 0 ],
-	[ 5, 2, 0 ],
-	[ 5, 5, 0 ],
-	[ 0, 5, 0 ],
-	[ 0, 0, 0 ],
-]
+// const coordinates = [
+// 	[ 0, 0, 0 ],
+// 	[ 2, 0, 0 ],
+// 	[ 3, 2, 0 ],
+// 	[ 5, 2, 0 ],
+// 	[ 5, 5, 0 ],
+// 	[ 0, 5, 0 ],
+// 	[ 0, 0, 0 ],
+// ]
 
-{
-	const geometry = new THREE.BufferGeometry().setAttribute( "position", new THREE.Float32BufferAttribute( coordinates.flat(), 3 ) ).rotateX( - Math.PI / 2 )
-	const material = new THREE.PointsMaterial( { size: 0.25, color: 0xffff00 } )
-	const mesh = new THREE.Points( geometry, material )
-	scene.add( mesh )
+const centerOfMass = geojson.features[ 2 ].properties.centerOfMass
+const geojsonCoordinates = geojson.features[ 2 ].geometry.coordinates[ 0 ]
+const coordinates = []
+
+for ( const position of geojsonCoordinates ) {
+
+	coordinates.push( utils.convertTo3DMercator( position, centerOfMass ) )
 }
 
+// const v3 = new THREE.Vector3( ...utils.convertTo3DMercator( position, params.centerOfMass, params.elevation, params.scale ) )
 const elevation = 0
-const height = 2
-const widthSegments = 4
-const heightSegments = 4
+const height = 20
+const widthSegments = 32
+const heightSegments = 32
 
 for ( let i = 0; i < coordinates.length - 1; i++ ) {
 
@@ -113,7 +118,7 @@ for ( let i = 0; i < coordinates.length - 1; i++ ) {
 	const material = new THREE.MeshBasicMaterial( {
 		map,
 		wireframe: true,
-		side: 2,
+		// side: 2,
 	} )
 
 	const mesh = new THREE.Mesh( geometry, material )
