@@ -88,121 +88,121 @@ const createBase = ( coordinates, params ) => {
 	return geometry
 }
 
+const extrude = ( coordinates, params ) => {
+
+	// Projection
+
+	if ( !coordinates ) {
+
+		return null
+	}
+
+	if ( typeof coordinates[ 0 ][ 0 ] === "number" ) {
+
+		coordinates = [ coordinates ]
+	}
+
+	const geometries = []
+
+	for ( const contours of coordinates ) {
+
+		const base = createBase( contours, {
+			centerOfMass: params.centerOfMass,
+			scale: params.scale,
+			side: params.side,
+			elevation: params.elevation,
+			length: params.length,
+			attributes: {
+				uv: false,
+				normal: false,
+			}
+		} )
+
+		const isClockWise = turf.booleanClockwise( turf.lineString( contours ) )
+
+		for ( let i = 0; i < contours.length; i++ ) {
+
+			const A = new THREE.Vector3().fromBufferAttribute( base.attributes.position, i )
+			const B = new THREE.Vector3().fromBufferAttribute( base.attributes.position, ( i + 1 ) % contours.length )
+
+			const C = B.clone().setComponent( 2, B.z + params.height )
+			const D = A.clone().setComponent( 2, A.z + params.height )
+
+			const side = new THREE.BufferGeometry().setIndex( [ 1, 0, 3, 3, 2, 1 ] )
+
+			// const vertices = isClockWise ? [ ...A, ...B, ...C, ...D ] : [ ...D, ...C, ...B, ...A ]
+			const vertices = [ ...A, ...B, ...C, ...D ]
+
+			if ( params.attributes.uv ) {
+
+				side.setAttribute( "uv", new THREE.Float32BufferAttribute( [
+					0, 0,
+					1, 0,
+					1, 1,
+					0, 1,
+				], 2 ) )
+			}
+
+			side.setAttribute( "position", new THREE.Float32BufferAttribute( vertices, 3 ) )
+
+			geometries.push( side )
+		}
+	}
+
+	const geometry = utils.mergeGeometries( geometries, true )
+
+	if ( params.attributes.normal ) {
+
+		geometry.computeVertexNormals()
+	}
+
+	return geometry
+}
+
 const main = () => {
 
 	const { scene, camera, renderer } = setup()
 
 	const texture1 = new THREE.TextureLoader().load( "/156-comp-1024x1024.jpg" )
 
-	const polyIndex = 2
+	const polyIndex = 0
 
 	const coordinates = geojson.features[ polyIndex ].geometry.coordinates
 
 	const centerOfMass = turf.centerOfMass( geojson.features[ polyIndex ] ).geometry.coordinates
 	const scale = 6_378_137
 
+	// BOTTOM
+
 	{
-		const geometry = createBase( coordinates[ 0 ], {
+		const geometry = createBase( coordinates, {
 			centerOfMass: centerOfMass,
 			scale: scale,
 			side: 0,
-			elevation: -50,
-			length: 0,
+			elevation: 30,
+			length: 10,
 			attributes: {
 				uv: true,
 				normal: true,
 			}
 		} )
 
-		const material = new THREE.MeshBasicMaterial( { map: texture1, color: 0xff0000 } )
+		const material = new THREE.MeshBasicMaterial( { map: texture1, color: 0xffff00 } )
 
 		scene.add( new THREE.Mesh( geometry, material ) )
 	}
 
+	// EXTRUDE
+
 	{
-		const geometry = createBase( coordinates, {
+		const geometry = extrude( coordinates, {
 			centerOfMass: centerOfMass,
 			scale: scale,
 			side: 0,
 			elevation: 0,
-			length: 0,
-			attributes: {
-				uv: true,
-				normal: true,
-			}
-		} )
-
-		const material = new THREE.MeshBasicMaterial( { map: texture1, color: 0x00ff00 } )
-
-		scene.add( new THREE.Mesh( geometry, material ) )
-	}
-
-	{
-		const geometry = createBase( coordinates[ 1 ], {
-			centerOfMass: centerOfMass,
-			scale: scale,
-			side: 0,
-			elevation: 50,
-			length: 0,
-			attributes: {
-				uv: true,
-				normal: true,
-			}
-		} )
-
-		const material = new THREE.MeshBasicMaterial( { map: texture1, color: 0x0000ff } )
-
-		scene.add( new THREE.Mesh( geometry, material ) )
-	}
-
-	{
-		const geometry = createBase( coordinates[ 2 ], {
-			centerOfMass: centerOfMass,
-			scale: scale,
-			side: 0,
-			elevation: 50,
-			length: 0,
-			attributes: {
-				uv: true,
-				normal: true,
-			}
-		} )
-
-		const material = new THREE.MeshBasicMaterial( { map: texture1, color: 0x0000ff } )
-
-		scene.add( new THREE.Mesh( geometry, material ) )
-	}
-
-	{
-		const geometry = createBase( coordinates, {
-			centerOfMass: centerOfMass,
-			scale: scale,
-			side: 0,
-			elevation: 100,
-			length: -100,
-			attributes: {
-				uv: true,
-				normal: true,
-			}
-		} )
-
-		const material = new THREE.MeshBasicMaterial( { map: texture1, color: 0x00ffff } )
-
-		scene.add( new THREE.Mesh( geometry, material ) )
-	}
-
-	/*
-		// Basic Plane
-
-		const geometry = extude( coordinates, {
-			centerOfMass: centerOfMass,
-			scale: scale,
-			side: 0,
-			elevation: 10,
-			height: 0,
-			length: 0,
+			length: 10,
+			height: 30,
 			thickness: 0,
-			fill: true,
 			attributes: {
 				uv: true,
 				normal: true,
@@ -212,87 +212,7 @@ const main = () => {
 		const material = new THREE.MeshBasicMaterial( { map: texture1 } )
 
 		scene.add( new THREE.Mesh( geometry, material ) )
-	*/
-
-	/*const texture1 = new THREE.TextureLoader().load( "/156-comp-1024x1024.jpg" )
-	const texture2 = new THREE.TextureLoader().load( "/0524-1024x1024.jpg" )
-	const texture3 = new THREE.TextureLoader().load( "/159-compr-1024x1024.jpg" )
-
-	try {
-
-		console.log( geojson.features[ 0 ].geometry )
-
-		const polygon = new Polygon( geojson.features[ 2 ] )
-
-		const extuder = new Extruder( polygon )
-
-		{
-			const geometry = extuder.createExteriorPlane( {
-				elevation: 0,
-				// length: 100,
-				attributes: {
-					uv: true,
-					normal: true,
-				},
-			} )
-
-			const material = new THREE.MeshStandardMaterial( {
-				metalness: 0,
-				roughness: 1,
-				map: texture1,
-				// side: 2,
-			} )
-
-			scene.add( new THREE.Mesh( geometry, material ) )
-		}
-
-		{
-			const geometry = extuder.createInteriorPlane( {
-				elevation: 10,
-				// length: 100,
-				attributes: {
-					uv: true,
-					normal: true,
-				},
-			} )
-
-			const material = new THREE.MeshStandardMaterial( {
-				metalness: 0,
-				roughness: 1,
-				map: texture1,
-				// side: 2,
-			} )
-
-			scene.add( new THREE.Mesh( geometry, material ) )
-		}
-
-		{
-			const geometry = extuder.createExteriorSides( {
-				elevation: 0,
-				height: 15,
-				// side: 1,
-				length: 0,
-				thickness: 10,
-				attributes: {
-					uv: true,
-					normal: true,
-				},
-			} )
-
-			const material = new THREE.MeshStandardMaterial( {
-				metalness: 0,
-				roughness: 1,
-				map: texture1,
-				// side: 2,
-			} )
-
-			// scene.add( new THREE.Mesh( geometry, material ) )
-		}
 	}
-	catch( e ) {
-
-		console.warn( e )
-	}*/
 }
 
 main()
